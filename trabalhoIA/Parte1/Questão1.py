@@ -1,91 +1,120 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
-def hc(func, x_bounds, s=0.1, max_iter=10000, t=100):
-    x1_min, x1_max = x_bounds
-    x2_min, x2_max = x_bounds
-    current_x1 = np.random.uniform(x1_min, x1_max)  # Inicialização aleatória
-    current_x2 = np.random.uniform(x2_min, x2_max)
-    best_x1, best_x2 = current_x1, current_x2
-    best_value = func(best_x1, best_x2)
+def objective_function(x):
+    return x[0]**2 + x[1]**2
+
+def random_candidate():
+    return np.random.uniform(-100, 100, 2)
+
+def hill_climbing(epsilon=0.1, max_iterations=10000, t=100):
+    x_best = np.array([-100.0, -100.0]) 
+    best_score = objective_function(x_best)
+    no_improvement_count = 0
+
+    history = []
     
-    for i in range(max_iter):
-        # Gera mais vizinhos variando x1 e x2 simultaneamente e separadamente
-        neighbors = [
-            (best_x1 + np.random.uniform(-s, s), best_x2 + np.random.uniform(-s, s)),
-            (best_x1 + np.random.uniform(-s, s), best_x2),
-            (best_x1, best_x2 + np.random.uniform(-s, s)),
-            (best_x1 - np.random.uniform(-s, s), best_x2 - np.random.uniform(-s, s)),
-            (best_x1 - np.random.uniform(-s, s), best_x2),
-            (best_x1, best_x2 - np.random.uniform(-s, s)),
-        ]
+    for i in range(max_iterations):
+        y = x_best + np.random.uniform(-epsilon, epsilon, 2)
+        y = np.clip(y, -100, 100)
+
+        current_score = objective_function(y)
         
-        # Testa os vizinhos gerados
-        for x1_new, x2_new in neighbors:
-            if x1_min <= x1_new <= x1_max and x2_min <= x2_new <= x2_max:
-                value = func(x1_new, x2_new)
-                if value < best_value:
-                    best_x1, best_x2 = x1_new, x2_new
-                    best_value = value
-        
-        # Reduz gradualmente o passo de perturbação ao longo das iterações
-        if i % t == 0:
-            s *= 0.995  # Redução mais lenta do valor de s
-            if best_value == func(best_x1, best_x2):
-                break  # Interrompe se não houver melhora no valor de f(x1, x2)
+        if current_score < best_score:
+            x_best = y
+            best_score = current_score
+            no_improvement_count = 0
+        else:
+            no_improvement_count += 1
 
-    return best_x1, best_x2, best_value
+        history.append(x_best)  
 
-# Função objetivo: f(x1, x2) = x1^2 + x2^2
-def objective_function(x1, x2):
-    return x1**2 + x2**2
+        if no_improvement_count >= t:
+            break
 
-# Definição dos limites para x1 e x2
-bounds = (-100, 100)
+    return x_best, history
 
-# Execução do algoritmo Hill Climbing
-result = hc(objective_function, bounds)
-print(f"Melhor solução: x1 = {result[0]:.3f}, x2 = {result[1]:.3f}, f(x1, x2) = {result[2]:.3f}")
+def local_random_search(sigma=0.1, max_iterations=10000, t=100):
+    x_best = random_candidate()
+    best_score = objective_function(x_best)
+    no_improvement_count = 0
 
+    history = []
 
+    for i in range(max_iterations):
+        y = x_best + np.random.normal(0, sigma, 2)
+        y = np.clip(y, -100, 100)  
 
-def lrs(func, x_bounds, sigma=0.1, max_iter=10000):
-    x1_min, x1_max = x_bounds
-    x2_min, x2_max = x_bounds
-    best_x1 = np.random.uniform(x1_min, x1_max)
-    best_x2 = np.random.uniform(x2_min, x2_max)
-    best_value = func(best_x1, best_x2)
-    
-    for _ in range(max_iter):
-        x1_new = np.random.normal(best_x1, sigma)
-        x2_new = np.random.normal(best_x2, sigma)
-        if x1_min <= x1_new <= x1_max and x2_min <= x2_new <= x2_max:
-            value = func(x1_new, x2_new)
-            if value < best_value:
-                best_x1, best_x2 = x1_new, x2_new
-                best_value = value
+        current_score = objective_function(y)
 
-    return best_x1, best_x2, best_value
+        if current_score < best_score:
+            x_best = y
+            best_score = current_score
+            no_improvement_count = 0
+        else:
+            no_improvement_count += 1
 
-result = lrs(objective_function, bounds)
-print(f"Melhor solução: x1 = {result[0]:.3f}, x2 = {result[1]:.3f}, f(x1, x2) = {result[2]:.3f}")
+        history.append(x_best)
 
+        if no_improvement_count >= t:
+            break
 
-def grs(func, x_bounds, max_iter=10000):
-    x1_min, x1_max = x_bounds
-    x2_min, x2_max = x_bounds
-    best_x1 = np.random.uniform(x1_min, x1_max)
-    best_x2 = np.random.uniform(x2_min, x2_max)
-    best_value = func(best_x1, best_x2)
-    
-    for _ in range(max_iter):
-        x1_new = np.random.uniform(x1_min, x1_max)
-        x2_new = np.random.uniform(x2_min, x2_max)
-        value = func(x1_new, x2_new)
-        if value < best_value:
-            best_x1, best_x2 = x1_new, x2_new
-            best_value = value
+    return x_best, history
 
-    return best_x1, best_x2, best_value
+def global_random_search(max_iterations=10000):
+    x_best = random_candidate()
+    best_score = objective_function(x_best)
 
-result = grs(objective_function, bounds)
-print(f"Melhor solução: x1 = {result[0]:.3f}, x2 = {result[1]:.3f}, f(x1, x2) = {result[2]:.3f}")
+    history = []
+
+    for i in range(max_iterations):
+        y = random_candidate()
+
+        current_score = objective_function(y)
+
+        if current_score < best_score:
+            x_best = y
+            best_score = current_score
+
+        history.append(x_best)
+
+    return x_best, history
+
+def plot_3d_surface(history_hill, history_lrs, history_grs):
+    x = np.linspace(-100, 100, 400)
+    y = np.linspace(-100, 100, 400)
+    x_grid, y_grid = np.meshgrid(x, y)
+    z_grid = x_grid**2 + y_grid**2
+
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.plot_surface(x_grid, y_grid, z_grid, cmap='viridis', alpha=0.6, edgecolor='none')
+
+    def plot_history(history, label, color):
+        x_vals = [point[0] for point in history]
+        y_vals = [point[1] for point in history]
+        z_vals = [objective_function(point) for point in history]
+        ax.plot(x_vals, y_vals, z_vals, color=color, label=label, linewidth=2)
+
+    plot_history(history_hill, 'Hill Climbing', 'r')
+    plot_history(history_lrs, 'Local Random Search', 'b')
+    plot_history(history_grs, 'Global Random Search', 'g')
+
+    ax.set_title("Minimização da função objetivo em 3D")
+    ax.set_xlabel("x1")
+    ax.set_ylabel("x2")
+    ax.set_zlabel("f(x1, x2)")
+    ax.legend()
+
+    plt.show()
+
+hill_best, hill_history = hill_climbing()
+lrs_best, lrs_history = local_random_search()
+grs_best, grs_history = global_random_search()
+
+plot_3d_surface(hill_history, lrs_history, grs_history)
+
+print(f'Hill Climbing melhor solução: {hill_best}, valor: {objective_function(hill_best):.3f}')
+print(f'Local Random Search melhor solução: {lrs_best}, valor: {objective_function(lrs_best):.3f}')
+print(f'Global Random Search melhor solução: {grs_best}, valor: {objective_function(grs_best):.3f}')
