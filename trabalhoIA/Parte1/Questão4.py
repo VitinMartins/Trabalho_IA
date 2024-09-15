@@ -1,71 +1,122 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
-def f(x1, x2):
-    return (x1**2 - 10 * np.cos(2 * np.pi * x1) + 10) + (x2**2 - 10 * np.cos(2 * np.pi * x2) + 10)
+def objective_function(x):
+    return (x[0]**2 - 10 * np.cos(2 * np.pi * x[0]) + 10) + (x[1]**2 - 10 * np.cos(2 * np.pi * x[1]) + 10)
 
-def hill_climbing(iterations=10000, step_size=0.1, stop_early=100):
-    x1, x2 = np.random.uniform(-5.12, 5.12), np.random.uniform(-5.12, 5.12)  # Ponto inicial aleatório
-    best = f(x1, x2)
-    no_improvement = 0
+def random_candidate():
+    return np.array([np.random.uniform(-5.12, 5.12), np.random.uniform(-5.12, 5.12)])
 
-    for _ in range(iterations):
-        x1_new = x1 + np.random.uniform(-step_size, step_size)
-        x2_new = x2 + np.random.uniform(-step_size, step_size)
+def hill_climbing(epsilon=0.1, max_iterations=10000, t=100):
+    x_best = np.array([-5.12, -5.12])
+    best_score = objective_function(x_best)
+    no_improvement_count = 0
 
-        if -5.12 <= x1_new <= 5.12 and -5.12 <= x2_new <= 5.12:
-            value_new = f(x1_new, x2_new)
-            if value_new < best:  
-                x1, x2 = x1_new, x2_new
-                best = value_new
-                no_improvement = 0
-            else:
-                no_improvement += 1
+    history = []
+    
+    for i in range(max_iterations):
+        y = x_best + np.random.uniform(-epsilon, epsilon, 2)
+        y[0] = np.clip(y[0], -5.12, 5.12) 
+        y[1] = np.clip(y[1], -5.12, 5.12) 
 
-        if no_improvement > stop_early:
+        current_score = objective_function(y)
+        
+        if current_score < best_score:
+            x_best = y
+            best_score = current_score
+            no_improvement_count = 0
+        else:
+            no_improvement_count += 1
+
+        history.append(x_best) 
+
+        if no_improvement_count >= t:
             break
 
-    return x1, x2, best
+    return x_best, history
 
-x1, x2, best_value = hill_climbing()
-print(f"Hill Climbing: x1 = {x1:.3f}, x2 = {x2:.3f}, f(x1, x2) = {best_value:.3f}")
+def local_random_search(sigma=0.1, max_iterations=10000, t=100):
+    x_best = random_candidate()
+    best_score = objective_function(x_best)
+    no_improvement_count = 0
 
+    history = []
 
+    for i in range(max_iterations):
+        y = x_best + np.random.normal(0, sigma, 2)
+        y[0] = np.clip(y[0], -5.12, 5.12)  
+        y[1] = np.clip(y[1], -5.12, 5.12) 
 
-def lrs(iterations=10000, sigma=0.1):
-    x1, x2 = np.random.uniform(-5.12, 5.12), np.random.uniform(-5.12, 5.12)  
-    best = f(x1, x2)
+        current_score = objective_function(y)
 
-    for _ in range(iterations):
-        x1_new = x1 + np.random.normal(0, sigma)
-        x2_new = x2 + np.random.normal(0, sigma)
+        if current_score < best_score:
+            x_best = y
+            best_score = current_score
+            no_improvement_count = 0
+        else:
+            no_improvement_count += 1
 
-        if -5.12 <= x1_new <= 5.12 and -5.12 <= x2_new <= 5.12:
-            value_new = f(x1_new, x2_new)
-            if value_new < best:
-                x1, x2 = x1_new, x2_new
-                best = value_new
+        history.append(x_best)
 
-    return x1, x2, best
+        if no_improvement_count >= t:
+            break
 
-x1, x2, best_value = lrs()
-print(f"LRS: x1 = {x1:.3f}, x2 = {x2:.3f}, f(x1, x2) = {best_value:.3f}")
+    return x_best, history
 
+def global_random_search(max_iterations=10000):
+    x_best = random_candidate()
+    best_score = objective_function(x_best)
 
-def grs(iterations=10000):
-    best = np.inf
-    best_x1, best_x2 = None, None
+    history = []
 
-    for _ in range(iterations):
-        x1 = np.random.uniform(-5.12, 5.12)
-        x2 = np.random.uniform(-5.12, 5.12)
-        value = f(x1, x2)
+    for i in range(max_iterations):
+        y = random_candidate()
 
-        if value < best: 
-            best_x1, best_x2 = x1, x2
-            best = value
+        current_score = objective_function(y)
 
-    return best_x1, best_x2, best
+        if current_score < best_score:
+            x_best = y
+            best_score = current_score
 
-x1, x2, best_value = grs()
-print(f"GRS: x1 = {x1:.3f}, x2 = {x2:.3f}, f(x1, x2) = {best_value:.3f}")
+        history.append(x_best)
 
+    return x_best, history
+
+def plot_3d_surface(history_hill, history_lrs, history_grs):
+    x = np.linspace(-5.12, 5.12, 400)
+    y = np.linspace(-5.12, 5.12, 400)
+    x_grid, y_grid = np.meshgrid(x, y)
+    z_grid = (x_grid**2 - 10 * np.cos(2 * np.pi * x_grid) + 10) + (y_grid**2 - 10 * np.cos(2 * np.pi * y_grid) + 10)
+
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.plot_surface(x_grid, y_grid, z_grid, cmap='viridis', alpha=0.6, edgecolor='none')
+
+    def plot_history(history, label, color):
+        x_vals = [point[0] for point in history]
+        y_vals = [point[1] for point in history]
+        z_vals = [objective_function(point) for point in history]
+        ax.plot(x_vals, y_vals, z_vals, color=color, label=label, linewidth=2)
+
+    plot_history(history_hill, 'Hill Climbing', 'r')
+    plot_history(history_lrs, 'Local Random Search', 'b')
+    plot_history(history_grs, 'Global Random Search', 'g')
+
+    ax.set_title("Minimização da função objetivo em 3D")
+    ax.set_xlabel("x1")
+    ax.set_ylabel("x2")
+    ax.set_zlabel("f(x1, x2)")
+    ax.legend()
+
+    plt.show()
+
+hill_best, hill_history = hill_climbing()
+lrs_best, lrs_history = local_random_search()
+grs_best, grs_history = global_random_search()
+
+plot_3d_surface(hill_history, lrs_history, grs_history)
+
+print(f'Hill Climbing melhor solução: {hill_best}, valor: {objective_function(hill_best):.3f}')
+print(f'Local Random Search melhor solução: {lrs_best}, valor: {objective_function(lrs_best):.3f}')
+print(f'Global Random Search melhor solução: {grs_best}, valor: {objective_function(grs_best):.3f}')
