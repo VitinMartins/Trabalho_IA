@@ -61,7 +61,7 @@ public class Questão3_Linear {
                 }
             }
 
-            temperatura -= deltaT; // Decremento Linear
+            temperatura -= deltaT;
         }
 
         System.out.println("Melhor solução encontrada:");

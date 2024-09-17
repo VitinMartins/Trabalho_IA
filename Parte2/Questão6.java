@@ -4,7 +4,6 @@ import java.util.Set;
 
 public class Questão6 {
 
-    // Calcula o custo da solução
     public static int calcularCusto(int[] solucao) {
         int custo = 0;
         int n = solucao.length;
@@ -18,7 +17,6 @@ public class Questão6 {
         return custo;
     }
 
-    // Gera uma solução vizinha perturbando a solução atual
     public static int[] gerarVizinho(int[] solucao) {
         int[] vizinho = solucao.clone();
         Random rand = new Random();
@@ -28,7 +26,6 @@ public class Questão6 {
         return vizinho;
     }
 
-    // Resolve o problema das 8 rainhas usando o algoritmo de Têmpera Simulada
     public static int[] resolverComTemperaturaSimulada(int n, double temperaturaInicial, double taxaResfriamento, int maxIteracoes) {
         int[] solucaoAtual = new int[n];
         Random rand = new Random();
@@ -78,7 +75,6 @@ public class Questão6 {
         while (solucoesEncontradas.size() < 92) {
             int[] solucao = resolverComTemperaturaSimulada(n, temperaturaInicial, taxaResfriamento, maxIteracoes);
             if (solucao != null) {
-                // Converter a solução para uma string para armazenar no Set
                 String solucaoString = java.util.Arrays.toString(solucao);
                 solucoesEncontradas.add(solucaoString);
             }
@@ -89,7 +85,6 @@ public class Questão6 {
         System.out.println("Solucoes distintas encontradas: " + solucoesEncontradas.size());
         System.out.println("Tempo total: " + (fim - inicio) / 1000.0 + " segundos");
         
-        // Exibir todas as soluções encontradas
         for (String solucao : solucoesEncontradas) {
             System.out.println("Solução: " + solucao);
     }

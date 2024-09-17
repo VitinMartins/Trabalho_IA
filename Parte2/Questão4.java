@@ -6,11 +6,9 @@ public class Questão4 {
         int[] perturbada = solucao.clone();
         Random rand = new Random();
 
-        // Escolhe duas colunas aleatórias para trocar
         int coluna1 = rand.nextInt(solucao.length);
         int coluna2 = rand.nextInt(solucao.length);
 
-        // Troca as posições das duas rainhas
         int temp = perturbada[coluna1];
         perturbada[coluna1] = perturbada[coluna2];
         perturbada[coluna2] = temp;
@@ -20,7 +18,7 @@ public class Questão4 {
 
     public static void main(String[] args) {
         int n = 8;
-        int[] solucaoAtual = {0, 4, 7, 5, 2, 6, 1, 3}; // Exemplo de solução atual
+        int[] solucaoAtual = {0, 4, 7, 5, 2, 6, 1, 3}; 
         int[] solucaoPerturbada = gerarPerturbacao(solucaoAtual);
 
         System.out.println("Solução Original:");

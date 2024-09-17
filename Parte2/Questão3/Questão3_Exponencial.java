@@ -61,7 +61,7 @@ public class Questão3_Exponencial {
                 }
             }
 
-            temperatura *= taxaResfriamento; // Decaimento Exponencial
+            temperatura *= taxaResfriamento;
         }
 
         System.out.println("Melhor solução encontrada:");

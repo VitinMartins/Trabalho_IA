@@ -62,7 +62,7 @@ public class Questão3_RaizQuadrada {
                 }
             }
 
-            temperatura = temperatura / (1 + taxaResfriamento * Math.sqrt(temperatura)); // Decaimento com Raiz Quadrada
+            temperatura = temperatura / (1 + taxaResfriamento * Math.sqrt(temperatura));
         }
 
         System.out.println("Melhor solução encontrada:");
